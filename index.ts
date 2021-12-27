@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import utf8 from "utf8";
+import quotedPrintable from "quoted-printable";
 
 function readFile(filePath: string) {
   try {
@@ -32,6 +34,7 @@ function clearData(data: string[]) {
     } else {
       if (line.includes("Ciudad") || line.includes("Calle")) {
         let fixedLine = line.replace("general", "").trim();
+        fixedLine = fixedLine.replace("Calle", "Direccion").trim();
         cleanedData.push(fixedLine);
       } else {
         cleanedData.push(line);
@@ -64,7 +67,7 @@ function transformData(data: string[]) {
     data.includes("Telefono") ||
     data.includes("Nombre") ||
     data.includes("Ciudad") ||
-    data.includes("Calle") ||
+    data.includes("Direccion") ||
     data.includes("Apellido") ||
     data.includes("Fijo particular") ||
     data.includes("Correo general");
@@ -89,7 +92,7 @@ type tParseData = {
   fijo?: string;
   correo?: string;
   ciudad?: string;
-  calle?: string;
+  direccion?: string;
 };
 
 function parseData(data: string[][]) {
@@ -114,7 +117,7 @@ function parseData(data: string[][]) {
           parsedContact.ciudad = field.replace("Ciudad:", "").trim();
           break;
         case 5:
-          parsedContact.calle = field.replace("Calle:", "").trim();
+          parsedContact.direccion = field.replace("Direccion:", "").trim();
           break;
         case 6:
           parsedContact.apellido = field.replace("Apellido:", "").trim();
@@ -139,7 +142,7 @@ function viewFieldType(data: string) {
   else if (data.includes("Telefono")) return 2;
   else if (data.includes("Nombre")) return 3;
   else if (data.includes("Ciudad")) return 4;
-  else if (data.includes("Calle")) return 5;
+  else if (data.includes("Direccion")) return 5;
   else if (data.includes("Apellido")) return 6;
   else if (data.includes("Fijo particular")) return 7;
   else if (data.includes("Correo general")) return 8;
@@ -172,9 +175,12 @@ function json2vcf(data: tParseData[]) {
     if (contact.movil) vcfContact += `TEL;CELL;PREF:${contact.movil}\n`;
     if (contact.telefono) vcfContact += `TEL;CELL;PREF:${contact.telefono}\n`;
     if (contact.fijo) vcfContact += `TEL;CELL;PREF:${contact.fijo}\n`;
-    if (contact.correo) vcfContact += `EMAIL;PREF:${contact.correo}\n`;
-    if (contact.calle) vcfContact += `ADR;PREF:;;${contact.calle};`;
-    if (contact.ciudad) vcfContact += `${contact.ciudad};`;
+    if (contact.correo) vcfContact += `EMAIL;HOME:${contact.correo}\n`;
+    if (contact.direccion) {
+      vcfContact += `ADR;HOME:;;${contact.direccion};`;
+    }
+    if (contact.ciudad)
+      vcfContact += `${contact.ciudad};;;\n`;
     vcfContact += `END:VCARD\n`;
 
     vcfData.push(vcfContact);
