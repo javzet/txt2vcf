@@ -1,7 +1,5 @@
 import fs from "fs";
 import path from "path";
-import utf8 from "utf8";
-import quotedPrintable from "quoted-printable";
 
 function readFile(filePath: string) {
   try {
@@ -150,15 +148,6 @@ function viewFieldType(data: string) {
 }
 
 const parsedData = parseData(transformData(formatData(clearData(data))));
-
-/* 
-BEGIN:VCARD
-VERSION:2.1
-N:;Norse;;;
-FN:Norse
-TEL;CELL;PREF:5544980856
-END:VCARD
-*/
 
 function json2vcf(data: tParseData[]) {
   let vcfData: string[] = [];
